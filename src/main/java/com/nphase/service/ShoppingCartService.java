@@ -9,14 +9,13 @@ import java.util.HashMap;
 
 public class ShoppingCartService {
 
-    private static final int DISCOUNT_COUNT = 3;
-    private static final BigDecimal DISCOUNT_FRACTION = BigDecimal.valueOf(0.1);
+    private final DiscountService discountService = new DiscountService();
 
     public BigDecimal calculateTotalPrice(ShoppingCart shoppingCart) {
         final var groupedProducts = groupByCategories(shoppingCart);
         return groupedProducts.values()
                 .stream()
-                .map(this::checkAndApplyDiscount)
+                .map(discountService::checkAndApplyDiscount)
                 .reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
     }
@@ -38,13 +37,6 @@ public class ShoppingCartService {
 
     private BigDecimal calculatePrice(Product product) {
         return product.getPricePerUnit().multiply(BigDecimal.valueOf(product.getQuantity()));
-    }
-
-    private BigDecimal checkAndApplyDiscount(CategoryAggregationDto aggregationDto) {
-        if (aggregationDto.getCount() > DISCOUNT_COUNT) {
-            return aggregationDto.getTotalPrice().multiply(BigDecimal.ONE.subtract(DISCOUNT_FRACTION));
-        }
-        return aggregationDto.getTotalPrice();
     }
 
 }
